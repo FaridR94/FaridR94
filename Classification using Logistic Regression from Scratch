@@ -1,0 +1,54 @@
+#Logistic Regression with Regularization
+class LogisticRegression():
+  def __init__(self, xtrain, ytrain, alpha, epsilon, xtest, ytest, lamda):
+    self.xtrain = xtrain
+    self.ytrain = ytrain
+    self.alpha = alpha
+    self.epsilon = epsilon
+    self.xtest = xtest
+    self.ytest = ytest
+    self.lamda = lamda
+  def fit(self):
+    w0 = np.ones([np.shape(self.xtrain)[0], 1])
+    w00 = np.ones([np.shape(self.xtest)[0], 1])
+    xtrain = np.concatenate((w0, self.xtrain), axis = 1)
+    xtest = np.concatenate((w00, self.xtest), axis = 1)
+    
+    w = np.random.randn(np.shape(xtrain)[1]) #we can try different initial condition for w
+    a = np.sum((w.T*xtrain), axis=1)
+    sigmoid = 1/(1+np.exp(-a))
+    delta = -np.matmul(xtrain.T, (self.ytrain - sigmoid)) 
+    iteration = 0
+    max_iteration = 5000
+    while np.square((np.linalg.norm(-self.alpha*delta))) > self.epsilon:
+      a = np.sum((w.T*xtrain), axis=1) 
+      sigmoid = 1/(1+np.exp(-a))
+      delta = -np.matmul(xtrain.T, (self.ytrain - sigmoid)) + self.lamda*np.sum(w) #regularization
+      w = w - self.alpha*delta
+      iteration = iteration + 1
+      if iteration > max_iteration: #exit from loop if exceeds maximum number of iterations
+        print('iteration exceeds maximum level')
+        break
+    return w
+  def predict(self, w): #this function predicts ytest
+    ypredict = np.zeros(len(self.ytest))
+    w00 = np.ones([np.shape(self.xtest)[0], 1])
+    xtest = np.concatenate((w00, self.xtest), axis = 1)
+    for i in range(len(ypredict)):
+      a = np.matmul(w.T, xtest[i])
+      if a > 0:
+        ypredict[i] = 1
+      else:
+        ypredict[i] = 0
+    return ypredict
+  def predict2(self, w, x_input): #this function predicts every input
+    x_input = np.concatenate((np.array([1]), x_input))
+    a = np.matmul(w.T, x_input)
+    if a > 0:
+      y_predict = 1
+    else:
+      y_predict = 0 
+    return y_predict
+  def AccuEval(self, w, ypredict):
+    accuracy = np.mean(self.ytest == ypredict)
+    return accuracy
